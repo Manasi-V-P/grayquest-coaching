@@ -1,0 +1,662 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GrayQuest — Coaching Fee EMI Prototype</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+<style>
+:root{--navy:#1B2B4B;--blue:#2E5096;--amber:#D97706;--amber-mid:#F59E0B;--amber-light:#FEF3C7;--green:#059669;--green-light:#ECFDF5;--red:#DC2626;--surface:#F8FAFC;--card:#FFFFFF;--border:#E2E8F0;--t1:#0F172A;--t2:#475569;--t3:#94A3B8;}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:-apple-system,BlinkMacSystemFont,'Inter',sans-serif;background:#f0f0f0;display:flex;flex-direction:column;align-items:center;min-height:100vh;padding:24px 16px;}
+h1{font-size:14px;font-weight:600;color:#666;margin-bottom:16px;letter-spacing:0.03em;}
+.nav-hints{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-bottom:16px;max-width:400px;}
+.hint-btn{font-size:12px;padding:5px 14px;border-radius:20px;border:1px solid #ccc;background:white;cursor:pointer;color:#555;}
+.hint-btn:hover{border-color:#2E5096;color:#2E5096;}
+.phone{width:375px;min-height:720px;background:var(--surface);border-radius:28px;overflow:hidden;border:2px solid #d0d0d0;box-shadow:0 8px 40px rgba(0,0,0,0.12);display:flex;flex-direction:column;position:relative;}
+.screen{display:none;flex-direction:column;flex:1;overflow-y:auto;}
+.screen.active{display:flex;}
+.status-bar{background:var(--navy);padding:10px 20px 8px;display:flex;justify-content:space-between;align-items:center;flex-shrink:0;}
+.status-bar span{color:rgba(255,255,255,0.7);font-size:11px;font-weight:500;}
+.status-bar .time{color:white;font-size:12px;font-weight:600;}
+.nav-header{background:var(--navy);padding:12px 20px 16px;flex-shrink:0;}
+.nav-row{display:flex;align-items:center;gap:8px;}
+.nav-back{color:rgba(255,255,255,0.8);font-size:13px;cursor:pointer;display:flex;align-items:center;gap:4px;background:none;border:none;padding:0;}
+.nav-back:hover{color:white;}
+.nav-title{color:white;font-size:17px;font-weight:600;flex:1;text-align:center;}
+.scroll-body{flex:1;overflow-y:auto;padding:16px;padding-bottom:90px;display:flex;flex-direction:column;gap:14px;}
+.card{background:var(--card);border-radius:16px;border:1px solid var(--border);}
+.card-pad{padding:16px;}
+.chip{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600;}
+.chip-green{background:var(--green-light);color:#065F46;}
+.chip-amber{background:var(--amber-light);color:#92400E;}
+.chip-blue{background:#EFF6FF;color:#1E40AF;}
+.label{font-size:11px;font-weight:600;color:var(--t3);letter-spacing:0.06em;text-transform:uppercase;}
+.row{display:flex;align-items:center;justify-content:space-between;}
+.row-start{display:flex;align-items:flex-start;gap:12px;}
+.btn-primary{width:100%;padding:15px;background:var(--amber);color:white;font-size:15px;font-weight:700;border:none;border-radius:14px;cursor:pointer;}
+.btn-primary:hover{background:#B45309;}
+.btn-secondary{width:100%;padding:14px;background:transparent;color:var(--blue);font-size:14px;font-weight:600;border:1.5px solid var(--blue);border-radius:14px;cursor:pointer;}
+.btn-ghost{width:100%;padding:12px;background:transparent;color:var(--t2);font-size:14px;font-weight:500;border:none;cursor:pointer;text-align:center;}
+.progress-rail{display:flex;align-items:flex-start;padding:0 4px;margin-top:14px;}
+.p-step{display:flex;flex-direction:column;align-items:center;flex:1;}
+.p-step:last-child{flex:0;}
+.p-dot{width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0;}
+.p-dot.done{background:var(--amber);color:white;}
+.p-dot.active{background:white;color:var(--navy);border:2px solid var(--amber);}
+.p-dot.pending{background:rgba(255,255,255,0.15);color:rgba(255,255,255,0.4);}
+.p-line{flex:1;height:2px;background:rgba(255,255,255,0.2);margin:12px 4px 0;}
+.p-line.done{background:var(--amber);}
+.p-lbl{font-size:9px;color:rgba(255,255,255,0.5);margin-top:4px;text-align:center;}
+.p-lbl.active{color:white;font-weight:600;}
+.hero-card{background:var(--navy);border-radius:20px;padding:20px;}
+.divider{height:1px;background:var(--border);margin:0 16px;}
+.input-field{width:100%;padding:13px 14px;border:1.5px solid var(--border);border-radius:12px;font-size:15px;color:var(--t1);background:white;outline:none;}
+.input-field:focus{border-color:var(--blue);}
+.input-label{font-size:12px;font-weight:600;color:var(--t2);margin-bottom:6px;display:block;}
+.emi-amount{font-size:40px;font-weight:800;color:var(--navy);letter-spacing:-1px;}
+.tenure-pill{padding:8px 16px;border-radius:20px;font-size:13px;font-weight:600;cursor:pointer;border:1.5px solid var(--border);color:var(--t2);background:white;}
+.tenure-pill.active{background:var(--navy);color:white;border-color:var(--navy);}
+.savings-strip{background:var(--green-light);border-radius:12px;padding:10px 14px;display:flex;align-items:center;gap:10px;}
+.bottom-cta{position:sticky;bottom:0;background:white;border-top:1px solid var(--border);padding:12px 16px;}
+.tab-bar{display:flex;background:white;border-top:1px solid var(--border);flex-shrink:0;}
+.tab{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:10px 4px;cursor:pointer;border:none;background:none;}
+.tab i{font-size:22px;color:var(--t3);}
+.tab span{font-size:10px;color:var(--t3);font-weight:500;}
+.tab.active i,.tab.active span{color:var(--navy);}
+.inst-logo{width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:800;flex-shrink:0;}
+.emi-row{display:flex;align-items:center;justify-content:space-between;padding:11px 0;border-bottom:1px solid var(--border);}
+.emi-row:last-child{border-bottom:none;}
+.locked-field{background:#F8FAFC;border:1.5px solid var(--border);border-radius:12px;padding:12px 14px;display:flex;align-items:center;justify-content:space-between;}
+.form-row{display:flex;flex-direction:column;gap:6px;}
+.notif-card{background:var(--amber-light);border-radius:14px;padding:14px;border:1px solid #FDE68A;display:flex;gap:12px;align-items:flex-start;}
+.badge{background:var(--red);color:white;font-size:10px;font-weight:700;width:16px;height:16px;border-radius:50%;display:flex;align-items:center;justify-content:center;position:absolute;top:-4px;right:-4px;}
+</style>
+</head>
+<body>
+<h1>GrayQuest — Coaching Fee EMI &nbsp;·&nbsp; Click through to navigate</h1>
+<div class="nav-hints">
+  <button class="hint-btn" onclick="go('home')">① Home</button>
+  <button class="hint-btn" onclick="go('landing')">② Product page</button>
+  <button class="hint-btn" onclick="go('calc')">③ Calculator</button>
+  <button class="hint-btn" onclick="go('apply')">④ Application</button>
+  <button class="hint-btn" onclick="go('approved')">⑤ Approved</button>
+  <button class="hint-btn" onclick="go('mandate')">⑥ Mandate</button>
+  <button class="hint-btn" onclick="go('confirm')">⑦ Confirmed</button>
+  <button class="hint-btn" onclick="go('dashboard')">⑧ Dashboard</button>
+  <button class="hint-btn" onclick="go('renew')">⑨ Renewal</button>
+</div>
+
+<div class="phone">
+
+<!-- SCREEN 1: HOME -->
+<div class="screen active" id="s-home">
+  <div class="status-bar"><span class="time">9:41</span><span>GrayQuest</span><span>●●●●</span></div>
+  <div class="nav-header">
+    <div class="row">
+      <div>
+        <div style="font-size:12px;color:rgba(255,255,255,0.6);margin-bottom:2px;">Good morning</div>
+        <div style="font-size:20px;font-weight:700;color:white;">Priya Sharma</div>
+      </div>
+      <div style="position:relative;">
+        <div style="width:40px;height:40px;border-radius:50%;background:rgba(255,255,255,0.12);display:flex;align-items:center;justify-content:center;cursor:pointer;">
+          <i class="ti ti-bell" style="color:white;font-size:20px;"></i>
+        </div>
+        <div class="badge">2</div>
+      </div>
+    </div>
+  </div>
+  <div class="scroll-body">
+    <div class="hero-card">
+      <div style="font-size:11px;color:rgba(255,255,255,0.55);font-weight:600;letter-spacing:0.06em;text-transform:uppercase;margin-bottom:8px;">RAHUL'S SCHOOL FEES</div>
+      <div style="font-size:20px;font-weight:700;color:white;margin-bottom:4px;">DPS RK Puram</div>
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px;">
+        <div style="background:rgba(16,185,129,0.25);color:#6EE7B7;font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;">PAID ✓</div>
+        <span style="font-size:12px;color:rgba(255,255,255,0.5);">Next due: June 2027</span>
+      </div>
+      <div style="display:flex;gap:24px;">
+        <div><div style="font-size:11px;color:rgba(255,255,255,0.5);">Annual fee</div><div style="font-size:16px;font-weight:700;color:white;">₹1,85,000</div></div>
+        <div><div style="font-size:11px;color:rgba(255,255,255,0.5);">EMI</div><div style="font-size:16px;font-weight:700;color:white;">₹18,500 × 10</div></div>
+      </div>
+    </div>
+
+    <div style="background:white;border-radius:16px;border:1.5px solid #FDE68A;overflow:hidden;cursor:pointer;" onclick="go('landing')">
+      <div style="background:#FFFBEB;padding:12px 16px;border-bottom:1px solid #FDE68A;display:flex;align-items:center;gap:8px;">
+        <div style="width:32px;height:32px;border-radius:8px;background:var(--amber);display:flex;align-items:center;justify-content:center;"><i class="ti ti-school" style="color:white;font-size:16px;"></i></div>
+        <div><div style="font-size:13px;font-weight:700;color:#92400E;">New for you</div><div style="font-size:11px;color:#B45309;">Coaching Fee EMI</div></div>
+        <i class="ti ti-chevron-right" style="color:#B45309;font-size:18px;margin-left:auto;"></i>
+      </div>
+      <div style="padding:14px 16px;">
+        <div style="font-size:15px;font-weight:700;color:var(--t1);margin-bottom:4px;">Pay Rahul's JEE coaching in EMIs</div>
+        <div style="font-size:13px;color:var(--t2);margin-bottom:12px;">Zero extra cost · Same GrayQuest you trust</div>
+        <button class="btn-primary" style="padding:11px;" onclick="event.stopPropagation();go('landing')">See how it works →</button>
+      </div>
+    </div>
+
+    <div>
+      <div class="label" style="margin-bottom:10px;">Quick actions</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+        <div style="background:white;border-radius:14px;border:1px solid var(--border);padding:14px;cursor:pointer;">
+          <i class="ti ti-receipt" style="font-size:22px;color:var(--blue);margin-bottom:8px;display:block;"></i>
+          <div style="font-size:13px;font-weight:600;color:var(--t1);">Pay fee</div>
+          <div style="font-size:11px;color:var(--t3);">School & coaching</div>
+        </div>
+        <div style="background:white;border-radius:14px;border:1px solid var(--border);padding:14px;cursor:pointer;" onclick="go('dashboard')">
+          <i class="ti ti-credit-card" style="font-size:22px;color:var(--blue);margin-bottom:8px;display:block;"></i>
+          <div style="font-size:13px;font-weight:600;color:var(--t1);">My EMIs</div>
+          <div style="font-size:11px;color:var(--t3);">Track payments</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="tab-bar">
+    <button class="tab active"><i class="ti ti-home"></i><span>Home</span></button>
+    <button class="tab"><i class="ti ti-credit-card"></i><span>Payments</span></button>
+    <button class="tab" onclick="go('dashboard')"><i class="ti ti-refresh"></i><span>EMIs</span></button>
+    <button class="tab"><i class="ti ti-headset"></i><span>Support</span></button>
+  </div>
+</div>
+
+<!-- SCREEN 2: LANDING -->
+<div class="screen" id="s-landing">
+  <div class="status-bar"><span class="time">9:41</span><span>GrayQuest</span><span>●●●●</span></div>
+  <div class="nav-header">
+    <div class="nav-row" style="margin-bottom:16px;">
+      <button class="nav-back" onclick="go('home')"><i class="ti ti-chevron-left"></i> Home</button>
+      <div class="nav-title">Coaching Fee EMI</div>
+      <div style="width:48px;"></div>
+    </div>
+    <div class="progress-rail">
+      <div class="p-step"><div class="p-dot active">1</div><div class="p-lbl active">Learn</div></div>
+      <div class="p-line"></div>
+      <div class="p-step"><div class="p-dot pending">2</div><div class="p-lbl">Calculate</div></div>
+      <div class="p-line"></div>
+      <div class="p-step"><div class="p-dot pending">3</div><div class="p-lbl">Apply</div></div>
+      <div class="p-line"></div>
+      <div class="p-step"><div class="p-dot pending">4</div><div class="p-lbl">Confirm</div></div>
+    </div>
+  </div>
+  <div class="scroll-body">
+    <div style="text-align:center;padding:8px 0 4px;">
+      <div style="width:72px;height:72px;border-radius:20px;background:#EFF6FF;display:flex;align-items:center;justify-content:center;margin:0 auto 12px;">
+        <i class="ti ti-school" style="font-size:36px;color:var(--blue);"></i>
+      </div>
+      <div style="font-size:22px;font-weight:800;color:var(--navy);line-height:1.2;margin-bottom:8px;">Pay coaching fees<br/>the smart way</div>
+      <div style="font-size:14px;color:var(--t2);line-height:1.5;">Zero extra cost. Institute gets paid today. You pay month by month.</div>
+    </div>
+
+    <div class="card card-pad">
+      <div class="label" style="margin-bottom:12px;">How it works</div>
+      <div style="display:flex;flex-direction:column;gap:14px;">
+        <div class="row-start">
+          <div style="width:36px;height:36px;border-radius:10px;background:var(--amber);display:flex;align-items:center;justify-content:center;flex-shrink:0;"><i class="ti ti-building" style="color:white;font-size:18px;"></i></div>
+          <div><div style="font-size:14px;font-weight:600;color:var(--t1);">Choose your coaching institute</div><div style="font-size:12px;color:var(--t3);">Allen, Aakash, FIITJEE, 400+ more</div></div>
+        </div>
+        <div class="row-start">
+          <div style="width:36px;height:36px;border-radius:10px;background:var(--blue);display:flex;align-items:center;justify-content:center;flex-shrink:0;"><i class="ti ti-calendar" style="color:white;font-size:18px;"></i></div>
+          <div><div style="font-size:14px;font-weight:600;color:var(--t1);">Set your EMI plan</div><div style="font-size:12px;color:var(--t3);">3, 6, or 9 months — your choice</div></div>
+        </div>
+        <div class="row-start">
+          <div style="width:36px;height:36px;border-radius:10px;background:var(--green);display:flex;align-items:center;justify-content:center;flex-shrink:0;"><i class="ti ti-check" style="color:white;font-size:18px;"></i></div>
+          <div><div style="font-size:14px;font-weight:600;color:var(--t1);">GrayQuest pays the institute</div><div style="font-size:12px;color:var(--t3);">Full fee paid today. You repay monthly.</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;">
+      <div style="text-align:center;padding:12px 8px;background:white;border-radius:12px;border:1px solid var(--border);"><div style="font-size:16px;font-weight:800;color:var(--navy);">₹0</div><div style="font-size:10px;color:var(--t3);font-weight:500;margin-top:2px;">Extra cost</div></div>
+      <div style="text-align:center;padding:12px 8px;background:white;border-radius:12px;border:1px solid var(--border);"><div style="font-size:16px;font-weight:800;color:var(--navy);">1M+</div><div style="font-size:10px;color:var(--t3);font-weight:500;margin-top:2px;">Parents</div></div>
+      <div style="text-align:center;padding:12px 8px;background:white;border-radius:12px;border:1px solid var(--border);"><div style="font-size:16px;font-weight:800;color:var(--navy);">RBI</div><div style="font-size:10px;color:var(--t3);font-weight:500;margin-top:2px;">Compliant</div></div>
+    </div>
+
+    <button class="btn-primary" onclick="go('calc')">Check my eligibility →</button>
+    <button class="btn-ghost">How is this different from a personal loan?</button>
+  </div>
+</div>
+
+<!-- SCREEN 3: CALCULATOR -->
+<div class="screen" id="s-calc">
+  <div class="status-bar"><span class="time">9:43</span><span>GrayQuest</span><span>●●●●</span></div>
+  <div class="nav-header">
+    <div class="nav-row" style="margin-bottom:16px;">
+      <button class="nav-back" onclick="go('landing')"><i class="ti ti-chevron-left"></i> Back</button>
+      <div class="nav-title">Your EMI Plan</div>
+      <div style="width:48px;"></div>
+    </div>
+    <div class="progress-rail">
+      <div class="p-step"><div class="p-dot done"><i class="ti ti-check" style="font-size:10px;"></i></div><div class="p-lbl">Learn</div></div>
+      <div class="p-line done"></div>
+      <div class="p-step"><div class="p-dot active">2</div><div class="p-lbl active">Calculate</div></div>
+      <div class="p-line"></div>
+      <div class="p-step"><div class="p-dot pending">3</div><div class="p-lbl">Apply</div></div>
+      <div class="p-line"></div>
+      <div class="p-step"><div class="p-dot pending">4</div><div class="p-lbl">Confirm</div></div>
+    </div>
+  </div>
+  <div class="scroll-body">
+    <div>
+      <div class="label" style="margin-bottom:8px;">Coaching institute</div>
+      <div class="card" style="cursor:pointer;">
+        <div style="display:flex;align-items:center;gap:12px;padding:14px 16px;" onclick="toggleInst()">
+          <div class="inst-logo" id="inst-logo" style="background:#FEF3C7;color:#92400E;">A</div>
+          <div style="flex:1;">
+            <div style="font-size:15px;font-weight:600;color:var(--t1);" id="inst-name">Aakash Institute</div>
+            <div style="font-size:12px;color:var(--t3);" id="inst-sub">JEE / NEET · Karol Bagh, Delhi</div>
+          </div>
+          <i class="ti ti-chevron-down" style="color:var(--t3);" id="inst-chev"></i>
+        </div>
+        <div id="inst-drop" style="display:none;border-top:1px solid var(--border);">
+          <div style="display:flex;align-items:center;gap:12px;padding:12px 16px;cursor:pointer;" onclick="selectInst('Aakash Institute','A','#FEF3C7','#92400E','JEE / NEET · Karol Bagh, Delhi')">
+            <div class="inst-logo" style="background:#FEF3C7;color:#92400E;">A</div>
+            <div><div style="font-size:14px;font-weight:600;color:var(--t1);">Aakash Institute</div><div style="font-size:11px;color:var(--t3);">JEE / NEET</div></div>
+          </div>
+          <div style="display:flex;align-items:center;gap:12px;padding:12px 16px;cursor:pointer;border-top:1px solid var(--border);" onclick="selectInst('Allen Career Institute','AL','#EFF6FF','#1E40AF','JEE / NEET · Pan-India')">
+            <div class="inst-logo" style="background:#EFF6FF;color:#1E40AF;">AL</div>
+            <div><div style="font-size:14px;font-weight:600;color:var(--t1);">Allen Career Institute</div><div style="font-size:11px;color:var(--t3);">JEE / NEET</div></div>
+          </div>
+          <div style="display:flex;align-items:center;gap:12px;padding:12px 16px;cursor:pointer;border-top:1px solid var(--border);" onclick="selectInst('FIITJEE','F','#F0FDF4','#065F46','JEE Main & Advanced')">
+            <div class="inst-logo" style="background:#F0FDF4;color:#065F46;">F</div>
+            <div><div style="font-size:14px;font-weight:600;color:var(--t1);">FIITJEE</div><div style="font-size:11px;color:var(--t3);">JEE Main & Advanced</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <div class="label" style="margin-bottom:8px;">Annual coaching fee</div>
+      <div style="position:relative;">
+        <span style="position:absolute;left:14px;top:50%;transform:translateY(-50%);font-size:16px;font-weight:600;color:var(--t2);">₹</span>
+        <input type="number" id="fee-input" class="input-field" style="padding-left:30px;font-size:18px;font-weight:700;" value="84000" oninput="calcEMI()"/>
+      </div>
+      <div style="font-size:11px;color:var(--t3);margin-top:4px;">Pre-filled from Aakash fee schedule · You can edit</div>
+    </div>
+
+    <div>
+      <div class="label" style="margin-bottom:8px;">Repayment period</div>
+      <div style="display:flex;gap:8px;">
+        <button class="tenure-pill" id="t3" onclick="setTenure(3)">3 months</button>
+        <button class="tenure-pill active" id="t6" onclick="setTenure(6)">6 months</button>
+        <button class="tenure-pill" id="t9" onclick="setTenure(9)">9 months</button>
+      </div>
+    </div>
+
+    <div class="card card-pad">
+      <div style="text-align:center;padding:8px 0 16px;border-bottom:1px solid var(--border);">
+        <div style="font-size:11px;color:var(--t3);font-weight:600;letter-spacing:0.06em;text-transform:uppercase;margin-bottom:4px;">MONTHLY EMI</div>
+        <div class="emi-amount" id="emi-display">₹14,000</div>
+        <div style="font-size:13px;color:var(--t3);margin-top:2px;" id="emi-sub">× 6 months</div>
+      </div>
+      <div style="padding-top:14px;display:flex;flex-direction:column;gap:10px;">
+        <div class="row"><span style="font-size:13px;color:var(--t2);">Total you pay</span><span style="font-size:14px;font-weight:700;color:var(--t1);" id="total-display">₹84,000</span></div>
+        <div class="row"><span style="font-size:13px;color:var(--t2);">Processing fee</span><span style="font-size:14px;font-weight:700;color:var(--green);">₹0</span></div>
+        <div class="row"><span style="font-size:13px;color:var(--t2);">Interest charged</span><span style="font-size:14px;font-weight:700;color:var(--green);">₹0</span></div>
+        <div class="row"><span style="font-size:13px;color:var(--t2);">Start date</span><span style="font-size:14px;font-weight:600;color:var(--t1);">1 July 2026</span></div>
+      </div>
+    </div>
+
+    <div class="savings-strip">
+      <i class="ti ti-pig-money" style="color:var(--green);font-size:22px;flex-shrink:0;"></i>
+      <div>
+        <div style="font-size:13px;font-weight:700;color:#065F46;">You save ₹6,200 vs. a personal loan</div>
+        <div style="font-size:11px;color:#047857;">Personal loan at 16% would cost ₹6,200 extra</div>
+      </div>
+    </div>
+
+    <button class="btn-primary" onclick="go('apply')">This looks good — apply now →</button>
+  </div>
+</div>
+
+<!-- SCREEN 4: APPLICATION -->
+<div class="screen" id="s-apply">
+  <div class="status-bar"><span class="time">9:45</span><span>GrayQuest</span><span>●●●●</span></div>
+  <div class="nav-header">
+    <div class="nav-row" style="margin-bottom:16px;">
+      <button class="nav-back" onclick="go('calc')"><i class="ti ti-chevron-left"></i> Back</button>
+      <div class="nav-title">Application</div>
+      <div style="width:48px;"></div>
+    </div>
+    <div class="progress-rail">
+      <div class="p-step"><div class="p-dot done"><i class="ti ti-check" style="font-size:10px;"></i></div><div class="p-lbl">Learn</div></div>
+      <div class="p-line done"></div>
+      <div class="p-step"><div class="p-dot done"><i class="ti ti-check" style="font-size:10px;"></i></div><div class="p-lbl">Calculate</div></div>
+      <div class="p-line done"></div>
+      <div class="p-step"><div class="p-dot active">3</div><div class="p-lbl active">Apply</div></div>
+      <div class="p-line"></div>
+      <div class="p-step"><div class="p-dot pending">4</div><div class="p-lbl">Confirm</div></div>
+    </div>
+  </div>
+  <div class="scroll-body">
+    <div style="background:#EFF6FF;border-radius:12px;padding:10px 14px;display:flex;align-items:center;gap:8px;">
+      <i class="ti ti-bolt" style="color:var(--blue);font-size:18px;"></i>
+      <div style="font-size:13px;color:#1E40AF;font-weight:500;">We've pre-filled most of this. Just confirm two new details.</div>
+    </div>
+
+    <div class="card card-pad" style="display:flex;flex-direction:column;gap:12px;">
+      <div class="label">Your details</div>
+      <div class="form-row"><span class="input-label">Full name</span><div class="locked-field"><span style="font-size:14px;color:var(--t1);font-weight:500;">Priya Sharma</span><i class="ti ti-lock" style="color:var(--t3);font-size:14px;"></i></div></div>
+      <div class="form-row"><span class="input-label">PAN</span><div class="locked-field"><span style="font-size:14px;color:var(--t1);font-weight:500;">ABCPS****1K</span><i class="ti ti-lock" style="color:var(--t3);font-size:14px;"></i></div></div>
+      <div class="form-row"><span class="input-label">Monthly income</span><div class="locked-field"><span style="font-size:14px;color:var(--t1);font-weight:500;">₹1,25,000</span><button style="font-size:12px;color:var(--blue);background:none;border:none;cursor:pointer;font-weight:600;">Edit</button></div></div>
+    </div>
+
+    <div class="card card-pad" style="display:flex;flex-direction:column;gap:12px;">
+      <div class="label">Coaching details</div>
+      <div class="form-row"><span class="input-label">Institute</span><div class="locked-field"><span style="font-size:14px;color:var(--t1);font-weight:500;">Aakash Institute, Karol Bagh</span><button style="font-size:12px;color:var(--blue);background:none;border:none;cursor:pointer;font-weight:600;">Edit</button></div></div>
+      <div class="form-row"><span class="input-label">Fee amount</span><div class="locked-field"><span style="font-size:14px;color:var(--t1);font-weight:500;">₹84,000</span><button style="font-size:12px;color:var(--blue);background:none;border:none;cursor:pointer;font-weight:600;">Edit</button></div></div>
+      <div class="form-row"><span class="input-label">Academic year</span><div class="locked-field"><span style="font-size:14px;color:var(--t1);font-weight:500;">2026–27</span><i class="ti ti-lock" style="color:var(--t3);font-size:14px;"></i></div></div>
+    </div>
+
+    <div class="card card-pad" style="display:flex;flex-direction:column;gap:12px;">
+      <div class="label">New information needed</div>
+      <div class="form-row"><span class="input-label">UPI ID for EMI debit <span style="color:var(--red);">*</span></span><input type="text" class="input-field" value="priya.sharma@hdfc"/></div>
+      <div class="form-row"><span class="input-label">EMI start date <span style="color:var(--red);">*</span></span><input type="text" class="input-field" value="1 July 2026"/></div>
+    </div>
+
+    <div style="display:flex;align-items:flex-start;gap:10px;">
+      <input type="checkbox" id="consent" style="width:18px;height:18px;margin-top:2px;flex-shrink:0;" checked/>
+      <label for="consent" style="font-size:12px;color:var(--t2);line-height:1.5;">I confirm these details are accurate and consent to GrayQuest and IndusInd Bank processing my application. <span style="color:var(--blue);font-weight:600;">Read full terms</span></label>
+    </div>
+
+    <div>
+      <button class="btn-primary" onclick="go('approved')">Submit application →</button>
+      <div style="text-align:center;margin-top:8px;font-size:12px;color:var(--t3);">No credit score impact · Decision in under 2 minutes</div>
+    </div>
+  </div>
+</div>
+
+<!-- SCREEN 5: APPROVED -->
+<div class="screen" id="s-approved">
+  <div class="status-bar"><span class="time">9:47</span><span>GrayQuest</span><span>●●●●</span></div>
+  <div style="background:var(--green);padding:48px 20px 32px;text-align:center;flex-shrink:0;">
+    <div style="width:72px;height:72px;border-radius:50%;background:rgba(255,255,255,0.2);display:flex;align-items:center;justify-content:center;margin:0 auto 16px;">
+      <i class="ti ti-check" style="color:white;font-size:36px;"></i>
+    </div>
+    <div style="font-size:26px;font-weight:800;color:white;margin-bottom:6px;">You're approved!</div>
+    <div style="font-size:14px;color:rgba(255,255,255,0.8);">Rahul's JEE coaching is secured</div>
+  </div>
+  <div class="scroll-body">
+    <div class="card card-pad">
+      <div class="label" style="margin-bottom:12px;">Your approved plan</div>
+      <div style="display:flex;flex-direction:column;gap:10px;">
+        <div class="row"><span style="font-size:13px;color:var(--t2);">Parent</span><span style="font-size:14px;font-weight:600;color:var(--t1);">Priya Sharma</span></div>
+        <div class="row"><span style="font-size:13px;color:var(--t2);">Child</span><span style="font-size:14px;font-weight:600;color:var(--t1);">Rahul Sharma</span></div>
+        <div class="row"><span style="font-size:13px;color:var(--t2);">Institute</span><span style="font-size:14px;font-weight:600;color:var(--t1);">Aakash Institute</span></div>
+        <div class="divider" style="margin:4px 0;"></div>
+        <div class="row"><span style="font-size:13px;color:var(--t2);">Monthly EMI</span><span style="font-size:20px;font-weight:800;color:var(--navy);">₹14,000</span></div>
+        <div class="row"><span style="font-size:13px;color:var(--t2);">Duration</span><span style="font-size:14px;font-weight:600;color:var(--t1);">6 months</span></div>
+        <div class="row"><span style="font-size:13px;color:var(--t2);">First EMI</span><span style="font-size:14px;font-weight:600;color:var(--t1);">1 July 2026</span></div>
+        <div class="row"><span style="font-size:13px;color:var(--t2);">Extra cost</span><span style="font-size:14px;font-weight:700;color:var(--green);">₹0</span></div>
+      </div>
+    </div>
+    <div style="background:#ECFDF5;border-radius:14px;padding:14px;border:1px solid #A7F3D0;">
+      <div style="font-size:13px;font-weight:700;color:#065F46;margin-bottom:4px;">Next: set up your EMI mandate</div>
+      <div style="font-size:12px;color:#047857;">60 seconds via UPI. No branch visit needed.</div>
+    </div>
+    <button class="btn-primary" onclick="go('mandate')">Set up EMI mandate →</button>
+    <button class="btn-ghost">Save and do this later</button>
+  </div>
+</div>
+
+<!-- SCREEN 6: MANDATE -->
+<div class="screen" id="s-mandate">
+  <div class="status-bar"><span class="time">9:48</span><span>GrayQuest</span><span>●●●●</span></div>
+  <div class="nav-header">
+    <div class="nav-row" style="margin-bottom:16px;">
+      <button class="nav-back" onclick="go('approved')"><i class="ti ti-chevron-left"></i> Back</button>
+      <div class="nav-title">Set Up Mandate</div>
+      <div style="width:48px;"></div>
+    </div>
+    <div class="progress-rail">
+      <div class="p-step"><div class="p-dot done"><i class="ti ti-check" style="font-size:10px;"></i></div><div class="p-lbl">Learn</div></div>
+      <div class="p-line done"></div>
+      <div class="p-step"><div class="p-dot done"><i class="ti ti-check" style="font-size:10px;"></i></div><div class="p-lbl">Calculate</div></div>
+      <div class="p-line done"></div>
+      <div class="p-step"><div class="p-dot done"><i class="ti ti-check" style="font-size:10px;"></i></div><div class="p-lbl">Apply</div></div>
+      <div class="p-line done"></div>
+      <div class="p-step"><div class="p-dot active">4</div><div class="p-lbl active">Confirm</div></div>
+    </div>
+  </div>
+  <div class="scroll-body">
+    <div class="card card-pad">
+      <div class="label" style="margin-bottom:12px;">Mandate summary</div>
+      <div style="display:flex;flex-direction:column;gap:10px;">
+        <div class="row"><span style="font-size:13px;color:var(--t2);">Monthly amount</span><span style="font-size:18px;font-weight:800;color:var(--navy);">₹14,000</span></div>
+        <div class="row"><span style="font-size:13px;color:var(--t2);">Debit date</span><span style="font-size:14px;font-weight:600;color:var(--t1);">1st of every month</span></div>
+        <div class="row"><span style="font-size:13px;color:var(--t2);">From account</span><span style="font-size:14px;font-weight:600;color:var(--t1);">HDFC Bank ****2341</span></div>
+        <div class="row"><span style="font-size:13px;color:var(--t2);">Duration</span><span style="font-size:14px;font-weight:600;color:var(--t1);">6 months</span></div>
+        <div style="margin-top:4px;"><span class="chip chip-green">₹0 extra cost</span></div>
+      </div>
+    </div>
+
+    <div>
+      <div class="label" style="margin-bottom:10px;">Authorise via</div>
+      <div style="display:flex;flex-direction:column;gap:8px;">
+        <div id="upi-opt" style="border:2px solid var(--navy);border-radius:14px;padding:14px;cursor:pointer;background:white;" onclick="selMandate('upi')">
+          <div class="row">
+            <div style="display:flex;align-items:center;gap:10px;">
+              <div style="width:36px;height:36px;border-radius:10px;background:#EFF6FF;display:flex;align-items:center;justify-content:center;"><i class="ti ti-device-mobile" style="color:var(--blue);font-size:18px;"></i></div>
+              <div><div style="font-size:14px;font-weight:600;color:var(--t1);">UPI Autopay</div><div style="font-size:11px;color:var(--t3);">Fastest · Recommended</div></div>
+            </div>
+            <div id="upi-check" style="width:20px;height:20px;border-radius:50%;background:var(--navy);display:flex;align-items:center;justify-content:center;"><i class="ti ti-check" style="color:white;font-size:11px;"></i></div>
+          </div>
+        </div>
+        <div id="nach-opt" style="border:1.5px solid var(--border);border-radius:14px;padding:14px;cursor:pointer;background:white;" onclick="selMandate('nach')">
+          <div class="row">
+            <div style="display:flex;align-items:center;gap:10px;">
+              <div style="width:36px;height:36px;border-radius:10px;background:#F8FAFC;display:flex;align-items:center;justify-content:center;"><i class="ti ti-building-bank" style="color:var(--t2);font-size:18px;"></i></div>
+              <div><div style="font-size:14px;font-weight:600;color:var(--t1);">NACH / NetBanking</div><div style="font-size:11px;color:var(--t3);">1-2 days to activate</div></div>
+            </div>
+            <div id="nach-check" style="width:20px;height:20px;border-radius:50%;border:1.5px solid var(--border);"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div style="background:#F8FAFC;border-radius:12px;padding:12px;font-size:12px;color:var(--t2);line-height:1.5;">
+      You can cancel this mandate from your UPI app or by contacting GrayQuest at any time. We will never debit more than ₹14,000 on the agreed date.
+    </div>
+    <button class="btn-primary" onclick="go('confirm')">Approve EMI mandate →</button>
+  </div>
+</div>
+
+<!-- SCREEN 7: CONFIRMED -->
+<div class="screen" id="s-confirm">
+  <div class="status-bar"><span class="time">9:49</span><span>GrayQuest</span><span>●●●●</span></div>
+  <div style="background:var(--navy);padding:40px 20px 28px;text-align:center;flex-shrink:0;">
+    <div style="width:72px;height:72px;border-radius:50%;background:rgba(255,255,255,0.1);display:flex;align-items:center;justify-content:center;margin:0 auto 14px;">
+      <i class="ti ti-confetti" style="color:var(--amber-mid);font-size:36px;"></i>
+    </div>
+    <div style="font-size:24px;font-weight:800;color:white;margin-bottom:6px;">All done, Priya!</div>
+    <div style="font-size:13px;color:rgba(255,255,255,0.65);">₹84,000 sent to Aakash Institute</div>
+  </div>
+  <div class="scroll-body">
+    <div style="background:#ECFDF5;border-radius:14px;padding:14px;border:1px solid #A7F3D0;display:flex;gap:10px;align-items:flex-start;">
+      <i class="ti ti-circle-check" style="color:var(--green);font-size:22px;flex-shrink:0;margin-top:1px;"></i>
+      <div><div style="font-size:13px;font-weight:700;color:#065F46;">Institute payment confirmed</div><div style="font-size:12px;color:#047857;margin-top:2px;">Aakash will confirm receipt within 2 hours</div></div>
+    </div>
+
+    <div class="card card-pad">
+      <div class="label" style="margin-bottom:12px;">Your EMI schedule</div>
+      <div class="emi-row"><div><span style="width:8px;height:8px;border-radius:50%;background:var(--green);display:inline-block;margin-right:6px;"></span><span style="font-size:13px;font-weight:600;color:var(--t1);">EMI 1 — 1 Jul</span></div><div style="display:flex;align-items:center;gap:8px;"><span style="font-size:14px;font-weight:700;color:var(--t1);">₹14,000</span><span class="chip chip-green" style="font-size:10px;">Scheduled</span></div></div>
+      <div class="emi-row"><div><span style="width:8px;height:8px;border-radius:50%;background:var(--border);display:inline-block;margin-right:6px;"></span><span style="font-size:13px;color:var(--t2);">EMI 2 — 1 Aug</span></div><span style="font-size:14px;color:var(--t2);">₹14,000</span></div>
+      <div class="emi-row"><div><span style="width:8px;height:8px;border-radius:50%;background:var(--border);display:inline-block;margin-right:6px;"></span><span style="font-size:13px;color:var(--t2);">EMI 3 — 1 Sep</span></div><span style="font-size:14px;color:var(--t2);">₹14,000</span></div>
+      <div class="emi-row"><div><span style="width:8px;height:8px;border-radius:50%;background:var(--border);display:inline-block;margin-right:6px;"></span><span style="font-size:13px;color:var(--t2);">EMI 4 — 1 Oct</span></div><span style="font-size:14px;color:var(--t2);">₹14,000</span></div>
+      <div class="emi-row"><div><span style="width:8px;height:8px;border-radius:50%;background:var(--border);display:inline-block;margin-right:6px;"></span><span style="font-size:13px;color:var(--t2);">EMI 5 — 1 Nov</span></div><span style="font-size:14px;color:var(--t2);">₹14,000</span></div>
+      <div class="emi-row" style="border-bottom:none;"><div><span style="width:8px;height:8px;border-radius:50%;background:var(--border);display:inline-block;margin-right:6px;"></span><span style="font-size:13px;color:var(--t2);">EMI 6 — 1 Dec</span></div><span style="font-size:14px;color:var(--t2);">₹14,000</span></div>
+    </div>
+
+    <div class="card card-pad">
+      <div class="label" style="margin-bottom:12px;">What happens next</div>
+      <div style="display:flex;flex-direction:column;gap:12px;">
+        <div class="row-start"><i class="ti ti-brand-whatsapp" style="color:#25D366;font-size:20px;flex-shrink:0;"></i><div style="font-size:13px;color:var(--t2);">WhatsApp reminder 3 days before each EMI</div></div>
+        <div class="row-start"><i class="ti ti-credit-card" style="color:var(--blue);font-size:20px;flex-shrink:0;"></i><div style="font-size:13px;color:var(--t2);">Auto-debited on the 1st of each month</div></div>
+        <div class="row-start"><i class="ti ti-bell" style="color:var(--amber);font-size:20px;flex-shrink:0;"></i><div style="font-size:13px;color:var(--t2);">Instant notification after every payment</div></div>
+      </div>
+    </div>
+
+    <button class="btn-primary" onclick="go('dashboard')">Go to my EMI dashboard →</button>
+  </div>
+</div>
+
+<!-- SCREEN 8: DASHBOARD -->
+<div class="screen" id="s-dashboard">
+  <div class="status-bar"><span class="time">9:51</span><span>GrayQuest</span><span>●●●●</span></div>
+  <div class="nav-header">
+    <div class="row">
+      <div style="font-size:18px;font-weight:700;color:white;">My EMIs</div>
+      <div style="display:flex;gap:4px;">
+        <div style="padding:6px 12px;border-radius:20px;font-size:12px;font-weight:700;color:white;background:rgba(255,255,255,0.2);cursor:pointer;">All</div>
+        <div style="padding:6px 12px;border-radius:20px;font-size:12px;font-weight:600;color:rgba(255,255,255,0.6);cursor:pointer;">School</div>
+        <div style="padding:6px 12px;border-radius:20px;font-size:12px;font-weight:600;color:rgba(255,255,255,0.6);cursor:pointer;">Coaching</div>
+      </div>
+    </div>
+  </div>
+  <div class="scroll-body">
+    <div class="notif-card">
+      <i class="ti ti-bell-ringing" style="color:var(--amber);font-size:22px;flex-shrink:0;"></i>
+      <div style="flex:1;"><div style="font-size:13px;font-weight:700;color:#92400E;">EMI due in 3 days</div><div style="font-size:12px;color:#B45309;margin-top:2px;">₹14,000 from HDFC ****2341 on 1 July</div></div>
+      <button style="background:none;border:none;color:var(--t3);cursor:pointer;font-size:18px;">×</button>
+    </div>
+
+    <div class="card">
+      <div style="padding:14px 16px;">
+        <div class="row" style="margin-bottom:10px;">
+          <div><div style="font-size:15px;font-weight:700;color:var(--t1);">DPS RK Puram</div><div style="font-size:12px;color:var(--t3);">Rahul · School fees</div></div>
+          <span class="chip chip-green">On track</span>
+        </div>
+        <div style="background:#F1F5F9;border-radius:8px;height:8px;margin-bottom:8px;overflow:hidden;"><div style="background:var(--green);height:100%;width:50%;border-radius:8px;"></div></div>
+        <div class="row"><span style="font-size:12px;color:var(--t3);">EMI 5 of 10 paid</span><span style="font-size:13px;font-weight:700;color:var(--t1);">₹18,500 / month</span></div>
+      </div>
+      <div class="divider"></div>
+      <div style="padding:10px 16px;display:flex;align-items:center;justify-content:space-between;"><span style="font-size:12px;color:var(--t3);">Next: 1 Aug 2026</span><button style="font-size:12px;color:var(--blue);background:none;border:none;cursor:pointer;font-weight:600;">View details</button></div>
+    </div>
+
+    <div class="card" style="border:1.5px solid var(--amber);">
+      <div style="padding:14px 16px;">
+        <div class="row" style="margin-bottom:4px;"><div class="chip chip-amber" style="font-size:10px;">NEW</div><span class="chip chip-green">Active</span></div>
+        <div class="row" style="margin:8px 0 10px;">
+          <div><div style="font-size:15px;font-weight:700;color:var(--t1);">Aakash Institute</div><div style="font-size:12px;color:var(--t3);">Rahul · JEE coaching</div></div>
+        </div>
+        <div style="background:#FEF3C7;border-radius:8px;height:8px;margin-bottom:8px;overflow:hidden;"><div style="background:var(--amber);height:100%;width:16%;border-radius:8px;"></div></div>
+        <div class="row"><span style="font-size:12px;color:var(--t3);">EMI 1 of 6 scheduled</span><span style="font-size:13px;font-weight:700;color:var(--t1);">₹14,000 / month</span></div>
+      </div>
+      <div class="divider"></div>
+      <div style="padding:10px 16px;display:flex;align-items:center;justify-content:space-between;"><span style="font-size:12px;color:var(--t3);">Next: <strong style="color:#B45309;">1 Jul 2026 (in 3 days)</strong></span><button style="font-size:12px;color:var(--blue);background:none;border:none;cursor:pointer;font-weight:600;">View details</button></div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+      <div style="background:white;border-radius:14px;border:1px solid var(--border);padding:14px;text-align:center;"><div style="font-size:22px;font-weight:800;color:var(--navy);">₹32,500</div><div style="font-size:11px;color:var(--t3);margin-top:3px;">Total EMI / month</div></div>
+      <div style="background:white;border-radius:14px;border:1px solid var(--border);padding:14px;text-align:center;"><div style="font-size:22px;font-weight:800;color:var(--green);">₹6,200</div><div style="font-size:11px;color:var(--t3);margin-top:3px;">Saved vs. loans</div></div>
+    </div>
+
+    <button class="btn-secondary">+ Add coaching EMI</button>
+  </div>
+  <div class="tab-bar">
+    <button class="tab" onclick="go('home')"><i class="ti ti-home"></i><span>Home</span></button>
+    <button class="tab"><i class="ti ti-credit-card"></i><span>Payments</span></button>
+    <button class="tab active"><i class="ti ti-refresh"></i><span>EMIs</span></button>
+    <button class="tab"><i class="ti ti-headset"></i><span>Support</span></button>
+  </div>
+</div>
+
+<!-- SCREEN 9: RENEWAL -->
+<div class="screen" id="s-renew">
+  <div class="status-bar"><span class="time">11:30</span><span>GrayQuest</span><span>●●●●</span></div>
+  <div class="nav-header">
+    <div class="nav-row">
+      <button class="nav-back" onclick="go('dashboard')"><i class="ti ti-chevron-left"></i> Dashboard</button>
+      <div class="nav-title">Renew for Year 2</div>
+      <div style="width:48px;"></div>
+    </div>
+  </div>
+  <div class="scroll-body">
+    <div style="background:var(--navy);border-radius:18px;padding:20px;text-align:center;">
+      <div style="font-size:11px;color:rgba(255,255,255,0.55);font-weight:600;letter-spacing:0.06em;margin-bottom:6px;">YEAR 1 COMPLETE</div>
+      <div style="font-size:22px;font-weight:800;color:white;margin-bottom:4px;">₹84,000 paid in full</div>
+      <div style="font-size:13px;color:rgba(255,255,255,0.65);margin-bottom:14px;">6 EMIs · Zero extra cost · ₹6,200 saved</div>
+      <div style="background:rgba(255,255,255,0.1);border-radius:12px;padding:10px;font-size:13px;color:rgba(255,255,255,0.8);">You saved ₹6,200 vs. a personal loan this year</div>
+    </div>
+
+    <div class="card card-pad">
+      <div class="label" style="margin-bottom:12px;">Year 2 coaching plan</div>
+      <div style="display:flex;flex-direction:column;gap:10px;">
+        <div class="row"><span style="font-size:13px;color:var(--t2);">Institute</span><span style="font-size:14px;font-weight:600;color:var(--t1);">Aakash Institute</span></div>
+        <div class="row"><span style="font-size:13px;color:var(--t2);">Updated fee</span><div style="text-align:right;"><div style="font-size:14px;font-weight:700;color:var(--t1);">₹90,000</div><div style="font-size:11px;color:var(--amber);font-weight:600;">up ₹6,000 from last year</div></div></div>
+        <div class="row"><span style="font-size:13px;color:var(--t2);">New monthly EMI</span><span style="font-size:18px;font-weight:800;color:var(--navy);">₹15,000</span></div>
+        <div class="row"><span style="font-size:13px;color:var(--t2);">Start date</span><span style="font-size:14px;font-weight:600;color:var(--t1);">1 January 2027</span></div>
+      </div>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:8px;">
+      <button style="width:100%;background:none;border:1px solid var(--border);border-radius:12px;padding:10px 14px;font-size:12px;color:var(--t2);cursor:pointer;text-align:left;display:flex;align-items:center;justify-content:space-between;"><span>Changing coaching institute?</span><i class="ti ti-chevron-right" style="color:var(--t3);"></i></button>
+      <button style="width:100%;background:none;border:1px solid var(--border);border-radius:12px;padding:10px 14px;font-size:12px;color:var(--t2);cursor:pointer;text-align:left;display:flex;align-items:center;justify-content:space-between;"><span>Change tenure</span><i class="ti ti-chevron-right" style="color:var(--t3);"></i></button>
+    </div>
+
+    <button class="btn-primary" onclick="go('mandate')">Renew — same details →</button>
+    <button class="btn-ghost">Remind me in 2 weeks</button>
+
+    <div style="background:#FFFBEB;border-radius:14px;padding:14px;border:1px solid #FDE68A;display:flex;gap:10px;align-items:center;">
+      <i class="ti ti-gift" style="color:var(--amber);font-size:22px;flex-shrink:0;"></i>
+      <div style="flex:1;"><div style="font-size:13px;font-weight:700;color:#92400E;">Refer a parent, earn ₹200</div><div style="font-size:11px;color:#B45309;margin-top:2px;">Know someone paying coaching fees?</div></div>
+      <button style="background:var(--amber);color:white;border:none;border-radius:8px;padding:6px 12px;font-size:12px;font-weight:700;cursor:pointer;">Share</button>
+    </div>
+  </div>
+</div>
+
+</div><!-- end phone -->
+
+<script>
+function go(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  var el=document.getElementById('s-'+id);
+  if(el){el.classList.add('active');el.scrollTop=0;}
+}
+var tenure=6;
+function setTenure(n){
+  tenure=n;
+  document.querySelectorAll('.tenure-pill').forEach(p=>p.classList.remove('active'));
+  document.getElementById('t'+n).classList.add('active');
+  calcEMI();
+}
+function calcEMI(){
+  var fee=parseInt(document.getElementById('fee-input').value)||0;
+  var emi=Math.round(fee/tenure);
+  document.getElementById('emi-display').textContent='₹'+emi.toLocaleString('en-IN');
+  document.getElementById('emi-sub').textContent='× '+tenure+' months';
+  document.getElementById('total-display').textContent='₹'+fee.toLocaleString('en-IN');
+}
+var instOpen=false;
+function toggleInst(){
+  instOpen=!instOpen;
+  document.getElementById('inst-drop').style.display=instOpen?'block':'none';
+  document.getElementById('inst-chev').style.transform=instOpen?'rotate(180deg)':'';
+}
+function selectInst(name,abbr,bg,color,sub){
+  document.getElementById('inst-logo').textContent=abbr;
+  document.getElementById('inst-logo').style.background=bg;
+  document.getElementById('inst-logo').style.color=color;
+  document.getElementById('inst-name').textContent=name;
+  document.getElementById('inst-sub').textContent=sub;
+  instOpen=false;
+  document.getElementById('inst-drop').style.display='none';
+  document.getElementById('inst-chev').style.transform='';
+}
+function selMandate(t){
+  var upi=document.getElementById('upi-opt');
+  var nach=document.getElementById('nach-opt');
+  var uc=document.getElementById('upi-check');
+  var nc=document.getElementById('nach-check');
+  if(t==='upi'){
+    upi.style.border='2px solid var(--navy)';
+    nach.style.border='1.5px solid var(--border)';
+    uc.style.background='var(--navy)';uc.innerHTML='<i class="ti ti-check" style="color:white;font-size:11px;"></i>';
+    nc.style.background='transparent';nc.innerHTML='';
+  } else {
+    nach.style.border='2px solid var(--navy)';
+    upi.style.border='1.5px solid var(--border)';
+    nc.style.background='var(--navy)';nc.innerHTML='<i class="ti ti-check" style="color:white;font-size:11px;"></i>';
+    uc.style.background='transparent';uc.innerHTML='';
+  }
+}
+</script>
+</body>
+</html>
